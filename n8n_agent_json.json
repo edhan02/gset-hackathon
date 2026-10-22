@@ -1,0 +1,1463 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -560,
+        16
+      ],
+      "id": "f74e412a-1970-463d-8bf2-a6ffc989f26d",
+      "name": "Telegram Trigger",
+      "webhookId": "5593c7a7-06b5-4693-9ba7-3d7cd93043e4",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a1b2c3d4-0001-4000-8000-000000000001",
+                    "leftValue": "={{ $json.message.text !== undefined }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a1b2c3d4-0002-4000-8000-000000000002",
+                    "leftValue": "={{ $json.message.photo !== undefined }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a1b2c3d4-0003-4000-8000-000000000003",
+                    "leftValue": "={{ $json.message.voice !== undefined || $json.message.audio !== undefined }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Other"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -320,
+        -16
+      ],
+      "id": "8e67566e-c3bd-494c-bebf-b53e5d1fcaad",
+      "name": "Check Message Type"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "source",
+              "value": "text",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "channel",
+              "value": "telegram",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        -176
+      ],
+      "id": "e39e1dbd-ef9b-452a-af55-87a4a949d7e7",
+      "name": "Prep Text"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[$json.message.photo.length - 1].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        32
+      ],
+      "id": "b6959972-d91a-496f-a759-a24959067f04",
+      "name": "Get Image File",
+      "webhookId": "a7fc6a0f-52bc-47da-b46e-3bc6f08a1e08",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.1 Flash Lite"
+        },
+        "text": "Extract ALL text from this chat/SMS screenshot exactly as written, in reading order. Keep sender labels if visible. Output only the extracted text. If nothing is readable, output nothing.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        32
+      ],
+      "id": "60c8f82e-319c-496a-978b-e39ebad7b436",
+      "name": "Gemini Read Image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "eA1Nt9982eg23NPd",
+          "name": "purv ai studio"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "text",
+              "value": "={{ $json.content?.parts?.map(p => p.text).join('\\n') || $json.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "source",
+              "value": "image",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "channel",
+              "value": "telegram",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        32
+      ],
+      "id": "40ba0747-8204-4d99-a518-232128377b3b",
+      "name": "Image To Text"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ ($json.message.voice || $json.message.audio).file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        224
+      ],
+      "id": "ddfe367c-c4fa-4f92-99aa-ff7d210696ac",
+      "name": "Get Audio File",
+      "webhookId": "37026165-ceea-4126-9b1c-420e4a26b13c",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "text",
+              "value": "={{ $json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "source",
+              "value": "audio",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "channel",
+              "value": "telegram",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        224
+      ],
+      "id": "35215e7a-08bf-4d9a-bbe1-3960fb48dab5",
+      "name": "Audio To Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "h1",
+              "leftValue": "={{ String($json.text || '').trim().length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        32
+      ],
+      "id": "f0159c8b-4ff4-4631-8445-662a118c1fde",
+      "name": "Has Text"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are the analysis brain of a \"Digital Arrest & Real-Time Cyber Fraud Shield\" for Indian users.\nYou receive a text message, chat, SMS, call transcript or OCR'd screenshot.\n\nPROCESS\n1. ALWAYS call the tool scam_rule_checker first with the full message text. It returns rule_score (0-100), matched categories and exact phrases.\n2. Then use your own judgement on the full context. The rules can miss paraphrases, Hinglish or misspellings, and can over-flag genuine alerts.\n\nSCAM CUES: fake authority (CBI, police, ED, TRAI, courts, customs), threats of arrest/legal action, extreme urgency, secrecy/isolation demands (\"do not tell anyone\", \"stay on video call\"), money transfer demands (to a \"safe\"/\"RBI\"/\"verification\" account), requests for OTP/PIN/Aadhaar/PAN/remote access (AnyDesk, screen share, APK install).\n\nGENUINE MESSAGES EXIST: real bank/govt/delivery alerts often warn \"never share OTP\" or \"call 1930\". They never demand secrecy or money transfers to a safe account. Do not flag them. Assist the user's judgement, never accuse a specific person.\n\nOUTPUT (keep everything SHORT; the user is under pressure and reads on a phone):\n- risk_score: final 0-100 (0-29 LOW, 30-59 MEDIUM, 60-100 HIGH). rule_score: copy from the tool.\n- scam_type: 2-5 words, e.g. \"Digital arrest (fake CBI)\", \"Bank OTP phishing\", \"Parcel/customs scam\", or \"None\".\n- highlights: MAX 3, the strongest ones only. phrase = exact words copied from the message (max 8 words). category = ONE of: Fake authority, Threat/arrest, Urgency, Secrecy, Money demand, Sensitive info request. why = max 10 words, plain language.\n- summary: one sentence, max 15 words.\nDo not write paragraphs. Do not repeat the same reason twice."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -64
+      ],
+      "id": "8f47dff5-a145-41b5-9bb1-5a10c7ce9055",
+      "name": "Scam Analyst Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        208
+      ],
+      "id": "b924bd6b-c530-4e32-b3e0-0afd7f2a984d",
+      "name": "Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Rule-based scam cue detector. Input: the full message/transcript text as a string. Returns JSON with rule_score (0-100), rule_level, categories and highlights (exact matched phrases with category and why).",
+        "jsCode": "function analyze(text) {\n  const t = String(text || '');\n  const cats = [\n    { key: 'fake_authority', label: 'Fake authority', weight: 25,\n      why: 'Scammers pose as police, CBI, courts or other officials to scare you. Real agencies do not run investigations over WhatsApp/Skype/phone calls.',\n      re: /\\b(cbi|cyber ?crime( branch| police)?|enforcement directorate|ed officer|narcotics|ncb|customs (officer|department)|trai|supreme court|high court|rbi officer|inspector|police officer|officer from|court order|arrest warrant|digital(ly)? arrest(ed)?|fir (has been|is|registered)|mumbai police|delhi police)\\b/gi },\n    { key: 'threat', label: 'Threat of arrest / legal action', weight: 25,\n      why: 'Threats of arrest or legal trouble are used to make you panic and stop thinking clearly.',\n      re: /\\b(you (will|are going to) be arrested|arrest(ed)? (you )?(today|now)?|jail|legal action|case (has been )?(registered|filed)|money laundering|linked to (a |an )?(crime|case|illegal)|involved in (a |an )?(crime|case)|(aadhaar|sim|number|account|parcel|package)[^.]{0,40}(misused|blocked|frozen|seized|illegal|drugs|contraband|suspended)|drugs? (case|found|in (your )?(parcel|package)))\\b/gi },\n    { key: 'urgency', label: 'Extreme urgency', weight: 15,\n      why: 'Artificial deadlines are meant to stop you from verifying or asking anyone.',\n      re: /\\b(right now|immediately|at once|within \\d+ ?(minutes?|mins?|hours?)|(by|before) (today|tonight)|urgent(ly)?|last warning|final notice|don'?t delay|without delay)\\b/gi },\n    { key: 'secrecy', label: 'Secrecy / isolation demand', weight: 20,\n      why: 'Genuine authorities never ask you to hide a case from family, friends or your bank. Isolation is a classic scam tactic.',\n      re: /\\b(do not|don'?t|never) (tell|inform|share (this )?with|discuss (this )?with|speak to|talk to)( anyone| family| your family| your bank|[^.]{0,20}anyone)|keep (this|it|the matter) (strictly )?(confidential|secret)|(stay|remain) on (the )?(call|line|video)|do not (disconnect|hang up|cut)|(confidential|secret) (case|matter|investigation)\\b/gi },\n    { key: 'money', label: 'Money transfer demand', weight: 25,\n      why: 'No government agency asks you to move money to a \"safe\" or \"verification\" account. This is the end goal of the scam.',\n      re: /\\b(transfer (the )?(money|amount|funds|rs\\.?|₹|inr)|send (the )?(money|amount)|(rbi|safe|secure|government|verification) account|verification (amount|fee)|security deposit|settlement amount|pay (a )?(fine|bail|penalty)|bail amount|deposit (the )?(money|amount)|upi (id|to)|refundable|clear your name by paying)\\b/gi },\n    { key: 'sensitive', label: 'Sensitive info / remote access request', weight: 20,\n      why: 'Banks and officials never ask for OTP, PIN, CVV or remote access to your phone.',\n      re: /\\b(share (your )?(otp|pin|cvv|password|card number|aadhaar( number)?|pan( number)?)|(send|tell|give) (me )?(your )?(otp|pin|cvv|password)|screen ?shar(e|ing)|anydesk|teamviewer|quick ?support|install (this |the )?(app|apk)|download (this |the )?(app|apk)|aadhaar (and|&) pan|bank (details|statement) (for|to) verif)/gi }\n  ];\n\n  const hits = [];\n  const matchedCats = new Set();\n  let score = 0;\n  for (const c of cats) {\n    c.re.lastIndex = 0;\n    let m, any = false;\n    while ((m = c.re.exec(t)) !== null) {\n      any = true;\n      hits.push({ phrase: m[0].trim(), category: c.label, why: c.why, index: m.index });\n      if (m.index === c.re.lastIndex) c.re.lastIndex++;\n    }\n    if (any) { matchedCats.add(c.key); score += c.weight; }\n  }\n  if (matchedCats.size >= 3) score += 10;\n  if (matchedCats.has('fake_authority') && matchedCats.has('money')) score += 10;\n  if (matchedCats.has('secrecy') && matchedCats.has('money')) score += 5;\n\n  // Legit-message damping: genuine bank/govt alerts warn AGAINST sharing OTP, etc.\n  const legit = /\\b(never share|do not share|don'?t share|if (this|it) wasn'?t you|if you did not|not you\\?|call 1930|bank will never ask|official (website|app)|visit (your )?(nearest )?branch)\\b/i.test(t);\n  const hardScam = matchedCats.has('secrecy') || matchedCats.has('threat') || matchedCats.has('fake_authority');\n  if (legit && !hardScam) score = Math.round(score * 0.3);\n  // Warning phrases like \"never share OTP\" should not count as an OTP request\n  if (legit) {\n    for (let i = hits.length - 1; i >= 0; i--) {\n      const ctx = t.slice(Math.max(0, hits[i].index - 25), hits[i].index).toLowerCase();\n      if (hits[i].category.startsWith('Sensitive') && /(never|not|n'?t) $/.test(ctx)) hits.splice(i, 1);\n    }\n  }\n\n  score = Math.min(100, score);\n  const level = score >= 60 ? 'HIGH' : score >= 30 ? 'MEDIUM' : 'LOW';\n  hits.sort((a, b) => a.index - b.index);\n  return { rule_score: score, rule_level: level, categories: [...matchedCats], highlights: hits };\n}\nif (typeof module !== 'undefined') module.exports = { analyze };\n\n\nreturn JSON.stringify(analyze(String(query || '')));"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        208
+      ],
+      "id": "db039538-6d01-413f-aa43-acf699b20f20",
+      "name": "Scam Rule Checker"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"risk_score\": {\n      \"type\": \"number\"\n    },\n    \"rule_score\": {\n      \"type\": \"number\"\n    },\n    \"level\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"LOW\",\n        \"MEDIUM\",\n        \"HIGH\"\n      ]\n    },\n    \"scam_type\": {\n      \"type\": \"string\",\n      \"description\": \"2-5 words\"\n    },\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"One sentence, max 15 words\"\n    },\n    \"highlights\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"phrase\": {\n            \"type\": \"string\",\n            \"description\": \"Exact words from the message, max 8 words\"\n          },\n          \"category\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Fake authority\",\n              \"Threat/arrest\",\n              \"Urgency\",\n              \"Secrecy\",\n              \"Money demand\",\n              \"Sensitive info request\"\n            ]\n          },\n          \"why\": {\n            \"type\": \"string\",\n            \"description\": \"Max 10 words\"\n          }\n        },\n        \"required\": [\n          \"phrase\",\n          \"category\",\n          \"why\"\n        ]\n      },\n      \"maxItems\": 3\n    }\n  },\n  \"required\": [\n    \"risk_score\",\n    \"rule_score\",\n    \"level\",\n    \"scam_type\",\n    \"summary\",\n    \"highlights\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        208
+      ],
+      "id": "9a021fa8-c3a8-4633-9393-7677473e1d16",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json.result;\nconst chatId = $('Telegram Trigger').first().json.message.chat.id;\nconst { score, level } = r.risk;\nconst icon = { HIGH: '\\u{1F6A8}', MEDIUM: '⚠️', LOW: '✅' }[level];\nconst esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst cut = (s, n) => { s = String(s || '').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };\n\nlet msg;\nif (level === 'LOW') {\n  msg = `${icon} <b>LOW RISK</b> · ${score}/100\\nNo strong scam signs found.\\nStill: never share OTP/PIN, and verify unexpected requests on the official app or website.`;\n} else {\n  msg = `${icon} <b>${level} RISK</b> · ${score}/100`;\n  if (r.scam_type && r.scam_type !== 'None') msg += `\\nType: ${esc(cut(r.scam_type, 40))}`;\n  if (r.red_flags.length) {\n    msg += '\\n\\n\\u{1F50E} <b>Red flags</b>';\n    for (const h of r.red_flags) msg += `\\n• \"${esc(cut(h.phrase, 50))}\" → ${esc(h.category)}: ${esc(cut(h.why, 70))}`;\n  }\n  msg += '\\n\\n\\u{1F6D1} <b>Do now</b>';\n  r.actions.forEach((a, i) => { msg += `\\n${i + 1}. ${esc(a)}`; });\n  if (r.similar_cases.length) {\n    msg += '\\n\\n\\u{1F4F0} <b>Similar cases</b>';\n    for (const c of r.similar_cases) {\n      const href = String(c.url).replace(/&/g, '&amp;').replace(/\"/g, '&quot;');\n      msg += `\\n• <a href=\"${href}\">${esc(cut(c.title, 70))}</a>`;\n    }\n  }\n  msg += `\\n\\n<i>${esc(r.disclaimer)}</i>`;\n}\nreturn [{ json: { chat_id: chatId, message: msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        48
+      ],
+      "id": "c796e76d-28d8-4618-8689-9fe28cdee16a",
+      "name": "Format Warning"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        48
+      ],
+      "id": "50c40fb4-841d-49bf-a2d8-33839c79e26b",
+      "name": "Send Warning",
+      "webhookId": "8b6de816-7184-43ca-8bd4-db7ab606a24a",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "I couldn't read any text from that. Please send a clearer screenshot, a voice note, or paste the message text.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        432
+      ],
+      "id": "460f486c-9a34-4876-b09c-6b68cbd97ca2",
+      "name": "Send Unreadable",
+      "webhookId": "74a551c0-1c64-4058-b4ab-8fad96c177a6",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "Please send a text/SMS message, a chat screenshot, or a voice note and I'll check it for scam signs.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        416
+      ],
+      "id": "b37c2ddd-7a7f-4f41-be33-aa693f59929b",
+      "name": "Send Unsupported",
+      "webhookId": "eb4b1dd3-16a1-4159-b989-8fa018b9ca12",
+      "credentials": {
+        "telegramApi": {
+          "id": "6pOQZVsSs1MNbxWB",
+          "name": "bug busters"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "speechToTextOptions": {}
+      },
+      "type": "n8n-nodes-sarvam.sarvam",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "987b9b2b-6671-490a-9060-d122db3a445e",
+      "name": "Speech to text",
+      "credentials": {
+        "sarvamApi": {
+          "id": "ZuYHHhRDVKjc7F1T",
+          "name": "purv sarvam ai"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "r1",
+              "leftValue": "={{ Math.max(Number($json.output.risk_score) || 0, Number($json.output.rule_score) || 0) >= 30 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        -64
+      ],
+      "id": "6ec943d2-091b-4388-8921-bfa408ec722c",
+      "name": "Risky"
+    },
+    {
+      "parameters": {
+        "query": "={{ (($('Scam Analyst Agent').first().json.output.scam_type && $('Scam Analyst Agent').first().json.output.scam_type !== 'None') ? $('Scam Analyst Agent').first().json.output.scam_type : 'digital arrest scam') + ' India police advisory news victim' }}",
+        "options": {
+          "max_results": 3,
+          "search_depth": "basic"
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 2.1,
+      "position": [
+        1552,
+        -160
+      ],
+      "id": "ff2f645a-36cf-4f9b-8a73-3ed625eeeefb",
+      "name": "Search the web",
+      "credentials": {
+        "tavilyApi": {
+          "id": "wWZg2mCxBSmez4aU",
+          "name": "purv"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shield-analyze",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        800
+      ],
+      "id": "caa5e100-08ec-4fa9-a457-5480bfe00277",
+      "name": "Webhook",
+      "webhookId": "61409e49-592d-430b-a572-f0b726a7bf2d"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "748a5eae-128e-4fea-8fcd-1a2b9019638d",
+                    "leftValue": "={{ $binary.image !== undefined }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "39f8eeb4-b783-4df4-8490-e7236870f30d",
+                    "leftValue": "={{ $binary.audio !== undefined }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "84a9721d-3136-4458-9328-c8329dd882c0",
+                    "leftValue": "={{ String($json.body?.text || '').trim().length > 0 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Other"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -320,
+        800
+      ],
+      "id": "12af0fed-d67a-4df1-abad-66168593f69d",
+      "name": "Web Input Type"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "w1",
+              "name": "text",
+              "value": "={{ $json.body.text }}",
+              "type": "string"
+            },
+            {
+              "id": "w2",
+              "name": "source",
+              "value": "text",
+              "type": "string"
+            },
+            {
+              "id": "w3",
+              "name": "channel",
+              "value": "web",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        640
+      ],
+      "id": "d81901e7-3bf8-4bce-8baf-11f7f0614ea0",
+      "name": "Web Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nitem.binary = { data: item.binary.image };\nreturn [item];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        800
+      ],
+      "id": "1a0d9d56-d85a-4072-a452-16a3ad743ac0",
+      "name": "Web Image Binary"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite",
+          "mode": "list",
+          "cachedResultName": "Gemini 3.1 Flash Lite"
+        },
+        "text": "Extract ALL text from this chat/SMS screenshot exactly as written, in reading order. Keep sender labels if visible. Output only the extracted text. If nothing is readable, output nothing.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        800
+      ],
+      "id": "96715c95-2f87-4822-9af5-083a8d848d0f",
+      "name": "Web Gemini Read Image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "eA1Nt9982eg23NPd",
+          "name": "purv ai studio"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "text",
+              "value": "={{ $json.content?.parts?.map(p => p.text).join('\\n') || $json.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "source",
+              "value": "image",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "channel",
+              "value": "web",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        800
+      ],
+      "id": "d9d8e462-a6fd-4d55-b686-5f444129b781",
+      "name": "Web Image To Text"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nitem.binary = { data: item.binary.audio };\nreturn [item];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        960
+      ],
+      "id": "3cb8bb9b-a644-4286-a0bb-b5b9814b56f8",
+      "name": "Web Audio Binary"
+    },
+    {
+      "parameters": {
+        "speechToTextOptions": {}
+      },
+      "type": "n8n-nodes-sarvam.sarvam",
+      "typeVersion": 1,
+      "position": [
+        224,
+        960
+      ],
+      "id": "62bf37aa-fa4a-4c7b-9e86-e856527ca609",
+      "name": "Web Speech to text",
+      "credentials": {
+        "sarvamApi": {
+          "id": "ZuYHHhRDVKjc7F1T",
+          "name": "purv sarvam ai"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "text",
+              "value": "={{ $json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "source",
+              "value": "audio",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "channel",
+              "value": "web",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        960
+      ],
+      "id": "846146b6-1fb6-488e-bfca-20be0f14331b",
+      "name": "Web Audio To Text"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"ok\": false, \"error\": \"no_input\", \"message\": \"Send text, a chat screenshot (image) or an audio file.\" }",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        1120
+      ],
+      "id": "022243f2-f1ec-4bd0-9a8e-c2ee1f493c06",
+      "name": "Respond Unsupported"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a1d33a40-10e5-4e97-8a82-7203025c4540",
+              "leftValue": "={{ $json.channel === 'web' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        304
+      ],
+      "id": "74714c9e-7b20-4613-ace3-8b0b7fc6ca3b",
+      "name": "Is Web Unreadable"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"ok\": false, \"error\": \"no_text_found\", \"message\": \"Could not read any text from the input. Try a clearer screenshot, a clearer recording, or paste the text.\" }",
+        "options": {
+          "responseCode": 422,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1056,
+        304
+      ],
+      "id": "157981ea-42ca-4201-ba88-d44dd9e67fda",
+      "name": "Respond Unreadable"
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = $('Scam Analyst Agent').first().json.output || {};\nconst inp = $('Has Text').first().json;\nlet score = Math.max(0, Math.min(100, Math.round(Number(out.risk_score) || 0)));\nconst rule = Math.round(Number(out.rule_score) || 0);\nif (rule >= 60) score = Math.max(score, rule);   // strong rule evidence is never diluted by the LLM\nconst level = score >= 60 ? 'HIGH' : score >= 30 ? 'MEDIUM' : 'LOW';\n\nlet links = [];\ntry { links = ($('Search the web').first().json.results || []); } catch (e) { links = []; }\nconst similar = links.filter(r => r && /^https?:\\/\\//i.test(r.url || '')).slice(0, 3)\n  .map(r => ({ title: String(r.title || r.url).slice(0, 120), url: r.url }));\n\nconst flags = (out.highlights || []).slice(0, 3).map(h => ({ phrase: h.phrase, category: h.category, why: h.why }));\nconst actions = level === 'LOW'\n  ? ['Never share OTP/PIN with anyone.', 'Verify unexpected requests on the official app or website.']\n  : ['Stop. Don\\'t pay or share OTP/details.',\n     'Real police/CBI never arrest over a call or video.',\n     'Verify via the official website number, not this contact.',\n     'Paid already? Call 1930, report at cybercrime.gov.in'];\n\nconst result = {\n  ok: true,\n  risk: { score, level },\n  scam_type: out.scam_type || 'None',\n  summary: out.summary || '',\n  red_flags: flags,\n  actions,\n  similar_cases: level === 'LOW' ? [] : similar,\n  analyzed_text: String(inp.text || '').slice(0, 3000),\n  input_type: inp.source || 'text',\n  disclaimer: 'Automated aid, not a verdict. You decide.',\n  analyzed_at: new Date().toISOString()\n};\nreturn [{ json: { channel: inp.channel || 'telegram', result } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        -64
+      ],
+      "id": "c5e1b47c-de1f-41fb-9fb7-f10477c2c605",
+      "name": "Build Result"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b430579b-6a78-4077-9d6b-8b1fc157f721",
+              "leftValue": "={{ $json.channel === 'web' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2032,
+        -64
+      ],
+      "id": "13150a6b-0f6b-4805-bf34-0b42a8a0e2a8",
+      "name": "Is Web Result"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.result }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2272,
+        -160
+      ],
+      "id": "242fd909-da41-40b8-a4f5-d481ac2ab3a9",
+      "name": "Respond Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json.result;\nreturn [{ json: {\n  input_type: r.input_type,\n  analyzed_text: r.analyzed_text,\n  risk_level: r.risk.level,\n  risk_score: r.risk.score,\n  scam_type: r.scam_type,\n  summary: r.summary,\n  red_flags: r.red_flags,\n  actions: r.actions,\n  similar_cases: r.similar_cases,\n  disclaimer: r.disclaimer,\n  analyzed_at: r.analyzed_at\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        240
+      ],
+      "id": "c12475f6-e307-4704-9b32-7b9fd5c8d84a",
+      "name": "Prep Supabase Row"
+    },
+    {
+      "parameters": {
+        "tableId": "scam_reports",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        240
+      ],
+      "id": "f9e5953f-e42b-4c76-a649-8d1d3671313b",
+      "name": "Save Report",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zJkfkxYZWx7CtjlR",
+          "name": "Supabase account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Message Type": {
+      "main": [
+        [
+          {
+            "node": "Prep Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Image File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Unsupported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image File": {
+      "main": [
+        [
+          {
+            "node": "Gemini Read Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Read Image": {
+      "main": [
+        [
+          {
+            "node": "Image To Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image To Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio File": {
+      "main": [
+        [
+          {
+            "node": "Speech to text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio To Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Text": {
+      "main": [
+        [
+          {
+            "node": "Scam Analyst Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Web Unreadable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scam Analyst Agent": {
+      "main": [
+        [
+          {
+            "node": "Risky",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Scam Analyst Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scam Rule Checker": {
+      "ai_tool": [
+        [
+          {
+            "node": "Scam Analyst Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Scam Analyst Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Warning": {
+      "main": [
+        [
+          {
+            "node": "Send Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Speech to text": {
+      "main": [
+        [
+          {
+            "node": "Audio To Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risky": {
+      "main": [
+        [
+          {
+            "node": "Search the web",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search the web": {
+      "main": [
+        [
+          {
+            "node": "Build Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Web Input Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Input Type": {
+      "main": [
+        [
+          {
+            "node": "Web Image Binary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Web Audio Binary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Web Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unsupported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Image Binary": {
+      "main": [
+        [
+          {
+            "node": "Web Gemini Read Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Gemini Read Image": {
+      "main": [
+        [
+          {
+            "node": "Web Image To Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Image To Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Audio Binary": {
+      "main": [
+        [
+          {
+            "node": "Web Speech to text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Speech to text": {
+      "main": [
+        [
+          {
+            "node": "Web Audio To Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Audio To Text": {
+      "main": [
+        [
+          {
+            "node": "Has Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Web Unreadable": {
+      "main": [
+        [
+          {
+            "node": "Respond Unreadable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Unreadable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Result": {
+      "main": [
+        [
+          {
+            "node": "Is Web Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Web Result": {
+      "main": [
+        [
+          {
+            "node": "Respond Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Warning",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prep Supabase Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Supabase Row": {
+      "main": [
+        [
+          {
+            "node": "Save Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70cbb65765426613da84200be3bf28f92a65635a3c38d6681ed3bbd60584ae3a"
+  }
+}
